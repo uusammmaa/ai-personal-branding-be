@@ -12,6 +12,14 @@ import uuid
 
 app = FastAPI(title="RAG Document Chat API")
 
+UNSUPPORTED_PDF_NO_TEXT = (
+    "This PDF type is not supported: no extractable text was found. "
+    "That usually means the file is a screenshot, a scan, or a print-to-PDF "
+    "page saved as images rather than real text. "
+    "Only text-based PDFs work here—export from Word/Google Docs, or use a PDF "
+    "where you can select and copy text in a reader."
+)
+
 
 def _resolve_vector_store(requested: str | None) -> str:
     name = (requested or settings.vector_store or "pinecone").strip().lower()
@@ -60,6 +68,8 @@ async def upload_document(
     # Process document
     text = extract_text_from_pdf(file_bytes)
     chunks = chunk_text(text)
+    if not any(chunk.strip() for chunk in chunks):
+        raise HTTPException(status_code=400, detail=UNSUPPORTED_PDF_NO_TEXT)
     vectors = embed_texts(chunks)
 
     # Store in vector DB
