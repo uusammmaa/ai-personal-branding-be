@@ -13,7 +13,13 @@ class Settings(BaseSettings):
     pinecone_api_key: str
     pinecone_index_name: str = "rag-documents"
     supabase_url: str = ""
-    supabase_key: str = ""
+    supabase_key: str = Field(
+        default="",
+        validation_alias=AliasChoices(
+            "SUPABASE_KEY",
+            "SUPABASE_SERVICE_ROLE_KEY",
+        ),
+    )
     vector_store: str = "pinecone"  # "pinecone" or "supabase"
 
 

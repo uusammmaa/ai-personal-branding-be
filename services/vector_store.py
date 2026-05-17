@@ -31,15 +31,19 @@ class VectorStore(ABC):
         pass
 
 
-def get_vector_store() -> VectorStore:
-    """Factory: return the active vector store based on config."""
+def get_vector_store(provider: Optional[str] = None) -> VectorStore:
+    """Factory: return the active vector store.
+
+    ``provider`` overrides ``VECTOR_STORE`` from the environment when set
+    (e.g. per-request Pinecone vs Supabase for parallel demos).
+    """
     from config import settings
 
-    if settings.vector_store == "pinecone":
+    name = (provider or settings.vector_store or "pinecone").strip().lower()
+    if name == "pinecone":
         from services.pinecone_store import PineconeStore
         return PineconeStore()
-    elif settings.vector_store == "supabase":
+    if name == "supabase":
         from services.supabase_store import SupabaseStore
         return SupabaseStore()
-    else:
-        raise ValueError(f"Unknown vector store: {settings.vector_store}")
+    raise ValueError(f"Unknown vector store: {name!r}")

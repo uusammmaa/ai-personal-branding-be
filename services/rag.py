@@ -25,13 +25,17 @@ QUESTION:
 ANSWER:"""
 
 
-def rag_stream(question: str, doc_id: str) -> Iterator[str]:
+def rag_stream(
+    question: str,
+    doc_id: str,
+    vector_store: str | None = None,
+) -> Iterator[str]:
     """Full RAG pipeline: embed → retrieve → prompt → stream."""
     # 1. Embed the question
     query_vector = embed_query(question)
 
     # 2. Retrieve top-5 relevant chunks (scoped to this upload only)
-    store = get_vector_store()
+    store = get_vector_store(vector_store)
     chunks = store.query(query_vector, top_k=5, doc_id=doc_id)
 
     # 3. Build prompt with retrieved context
